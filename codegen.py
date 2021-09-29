@@ -27,9 +27,8 @@ def pluralize(noun):
 
 
 def save_to_file(content, file_name):
-    f = open(file_name, "w")
-    f.write(content)
-    f.close()
+    with open(file_name, "w") as f:
+        f.write(content)
 
 
 def get_file(file_name):
@@ -37,9 +36,8 @@ def get_file(file_name):
         print(f"File {file_name} does not exist!")
         exit(1)
 
-    f = open(file_name)
-    content = f.read()
-    f.close()
+    with open(file_name) as f:
+        content = f.read()
     return content
 
 
@@ -127,22 +125,16 @@ def main(model_name: str):
     pn = camel_to_snake(pluralize(model_name))
     if "owner" in related_fields:
         crud_template = env.get_template("crud_entity_with_owner.py.tpl")
-        save_to_file(crud_template.render(entity=model_name, entity_lower=camel_to_snake(model_name), pn=pn),
-                     f'codegen/generated/crud_{camel_to_snake(model_name)}.py')
     else:
         crud_template = env.get_template("crud_entity.py.tpl")
-        save_to_file(crud_template.render(entity=model_name, entity_lower=camel_to_snake(model_name), pn=pn),
-                     f'codegen/generated/crud_{camel_to_snake(model_name)}.py')
-
+    save_to_file(crud_template.render(entity=model_name, entity_lower=camel_to_snake(model_name), pn=pn),
+                 f'codegen/generated/crud_{camel_to_snake(model_name)}.py')
     if "owner" in related_fields:
         endpoints_template = env.get_template("endpoints_entity_with_owner.py.tpl")
-        save_to_file(endpoints_template.render(entity=model_name, entity_lower=camel_to_snake(model_name), pn=pn),
-                     f'codegen/generated/endpoints_{camel_to_snake(model_name)}.py')
     else:
         endpoints_template = env.get_template("endpoints_entity.py.tpl")
-        save_to_file(endpoints_template.render(entity=model_name, entity_lower=camel_to_snake(model_name)),
-                     f'codegen/generated/endpoints_{camel_to_snake(model_name)}.py')
-
+    save_to_file(endpoints_template.render(entity=model_name, entity_lower=camel_to_snake(model_name), pn=pn),
+                 f'codegen/generated/endpoints_{camel_to_snake(model_name)}.py')
     is_install = typer.confirm('Install new files?')
 
     if is_install:
